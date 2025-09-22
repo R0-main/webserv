@@ -1,0 +1,53 @@
+server:
+
+  port: 8080
+  port: 1111
+  server_name: "R0-WebServer"
+  max_body_size: 1048576  # 1MB
+
+  # Location configuration
+  location:
+    "/":
+      root:
+        "./www"
+      index: "index.html"
+      methods: ["GET", "POST", "DELETE"]
+      autoindex: false
+
+    "/test":
+      root: "../"
+      methods: ["GET"]
+      autoindex: true
+
+    "/upload":
+      root: "./uploads"
+      methods: ["GET", "POST"]
+      max_file_size: 5242880  # 5MB
+
+    "/api":
+      root: "./cgi-bin"
+      methods: ["GET", "POST"]
+      cgi: true
+
+    "/static":
+      root: "./static"
+      methods: ["GET"]
+      autoindex: false
+
+# Error pages
+error_pages:
+  404: "./errors/404.html"
+  500: "./errors/500.html"
+  403: "./errors/403.html"
+  ffff : "fwqfqfqfq"
+
+# MIME types
+mime_types:
+  ".html": "text/html"
+  ".css": "text/css"
+  ".js": "text/javascript"
+  ".png": "image/png"
+  ".jpg": "image/jpeg"
+  ".gif": "image/gif"
+  ".txt": "text/plain"
+  ".json": "application/json"

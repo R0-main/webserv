@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HTTP/1.1 Servers — Very Basic One‑Page</title>
+    <style>
+      :root {
+        --bg: #0f172a;
+        --panel: #111827;
+        --text: #e5e7eb;
+        --muted: #94a3b8;
+        --accent: #22d3ee;
+        --code-bg: #0b1220;
+        --border: #1f2937;
+      }
+      html, body {
+        margin: 0; padding: 0; background: var(--bg); color: var(--text);
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+        line-height: 1.55;
+      }
+      header {
+        padding: 2.5rem 1rem 1rem;
+        text-align: center;
+        background: linear-gradient(180deg, rgba(34,211,238,0.12), transparent 60%);
+        border-bottom: 1px solid var(--border);
+      }
+      h1 { margin: 0; font-size: clamp(1.6rem, 4vw, 2.2rem); letter-spacing: 0.2px; }
+      header p { color: var(--muted); margin: 0.6rem auto 0; max-width: 60ch; }
+      main { max-width: 900px; margin: 0 auto; padding: 1.25rem; }
+      section {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 1rem 1rem;
+        margin: 1rem 0;
+      }
+      h2 {
+        margin: 0 0 0.6rem; font-size: 1.1rem; color: var(--accent);
+      }
+      ul { margin: 0.5rem 0 0.2rem 1.2rem; padding: 0; }
+      li { margin: 0.25rem 0; }
+      code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+      pre {
+        background: var(--code-bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0.75rem;
+        overflow: auto;
+        margin: 0.6rem 0 0;
+      }
+      .grid {
+        display: grid; gap: 0.75rem;
+      }
+      @media (min-width: 760px) {
+        .grid.two { grid-template-columns: 1fr 1fr; }
+      }
+      a { color: var(--accent); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      footer {
+        text-align: center; color: var(--muted);
+        padding: 2rem 1rem 3rem;
+      }
+      .small { font-size: 0.92rem; color: var(--muted); }
+      .kbd {
+        background: #0a1020; border: 1px solid var(--border); padding: 0.12rem 0.35rem; border-radius: 6px; font-size: 0.92em;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>HTTP/1.1 Servers — A Very Basic One‑Page Overview</h1>
+      <p>
+        A tiny primer on what an HTTP/1.1 server does, the shape of requests and responses, and a couple of simple examples you can try.
+      </p>
+    </header>
+
+    <main>
+      <section>
+        <h2>What is HTTP/1.1?</h2>
+        <p class="small">
+          HTTP/1.1 is the application‑level protocol used by web servers and browsers for request/response messaging. It standardized persistent connections, virtual hosting via the Host header, and chunked transfer encoding.
+        </p>
+        <ul>
+          <li><strong>Persistent connections</strong>: keep the TCP connection open for multiple requests unless <code>Connection: close</code>.</li>
+          <li><strong>Host header</strong> is required (supports many sites on one IP).</li>
+          <li><strong>Message format</strong>: start‑line, headers, blank line, optional body.</li>
+          <li><strong>Body delimiting</strong>: via <code>Content-Length</code> or <code>Transfer-Encoding: chunked</code>.</li>
+          <li><strong>Status codes</strong>: 1xx (info), 2xx (success), 3xx (redirect), 4xx (client error), 5xx (server error).</li>
+          <li><strong>Caching</strong>: <code>Cache-Control</code>, <code>ETag</code>, <code>If-None-Match</code>, <code>Last-Modified</code>.</li>
+          <li><strong>Pipelining</strong> exists but is rarely used due to head‑of‑line blocking.</li>
+        </ul>
+      </section>
+
+      <section class="grid two">
+        <div>
+          <h2>Example request</h2>
+          <pre><code>GET /index.html HTTP/1.1
+Host: example.com
+User-Agent: curl/8.0
+Accept: */*</code></pre>
+          <p class="small">Notes: The request line is method, path, version. Headers follow, then a blank line. GET here has no body.</p>
+        </div>
+        <div>
+          <h2>Example response</h2>
+          <pre><code>HTTP/1.1 200 OK
+Date: Tue, 26 Aug 2025 08:39:00 GMT
+Server: ExampleServer/1.0
+Content-Type: text/plain; charset=utf-8
+Content-Length: 12
+
+Hello World!</code></pre>
+          <p class="small">After headers and a blank line comes the body. Here the body is 12 bytes: “Hello World!”.</p>
+        </div>
+      </section>
+
+      <section>
+        <h2>Minimal “hello” with netcat (demo)</h2>
+        <p class="small">
+          This serves a fixed response on port 8080. Open a terminal and run:
+        </p>
+        <pre><code>while true; do
+  printf 'HTTP/1.1 200 OK\r\nContent-Length: 12\r\nContent-Type: text/plain\r\n\r\nHello World!'
+  nc -l -p 8080 -q 1
+done</code></pre>
+        <p class="small">
+          Then in another terminal: <span class="kbd">curl -v http://localhost:8080/</span><br />
+          Tip: Some <code>nc</code> variants use different flags (e.g. <code>-k</code>, <code>-l 8080</code>), adjust as needed.
+        </p>
+      </section>
+
+      <section class="grid two">
+        <div>
+          <h2>Chunked transfer (no length known up‑front)</h2>
+          <pre><code>HTTP/1.1 200 OK
+Transfer-Encoding: chunked
+Content-Type: text/plain
+
+B
+Hello World!
+0
+
+</code></pre>
+          <p class="small">
+            “B” is hex for 11 bytes. Chunks are size line, then data, ending with a zero‑size chunk.
+          </p>
+        </div>
+
+        <div>
+          <h2>Common headers</h2>
+          <ul>
+            <li><code>Host</code> — required in HTTP/1.1 requests.</li>
+            <li><code>Connection</code> — e.g. <code>keep-alive</code> or <code>close</code>.</li>
+            <li><code>Content-Type</code> — media type of the body.</li>
+            <li><code>Content-Length</code> — byte length of the body.</li>
+            <li><code>Cache-Control</code>, <code>ETag</code>, <code>Last-Modified</code> — caching.</li>
+            <li><code>Range</code> / <code>Accept-Ranges</code> — partial content.</li>
+            <li><code>Location</code> — with redirects (3xx).</li>
+          </ul>
+        </div>
+      </section>
+
+      <section>
+        <h2>Try a tiny Node.js HTTP/1.1 server</h2>
+        <p class="small">Node’s built‑in <code>http</code> module speaks HTTP/1.1 by default.</p>
+        <pre><code>// save as server.js, then: node server.js
+const http = require('http');
+
+const server = http.createServer((req, res) =&gt; {
+  // Minimal response
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('Hello from HTTP/1.1');
+});
+
+server.listen(8080, () =&gt; {
+  console.log('Listening on http://localhost:8080');
+});</code></pre>
+        <p class="small">Test with: <span class="kbd">curl -v http://localhost:8080/</span></p>
+      </section>
+
+      <section>
+        <h2>Further reading</h2>
+        <ul>
+          <li><a href="https://www.rfc-editor.org/rfc/rfc7230" target="_blank" rel="noreferrer">RFC 7230: Message Syntax and Routing</a> (HTTP/1.1)</li>
+          <li><a href="https://www.rfc-editor.org/rfc/rfc7231" target="_blank" rel="noreferrer">RFC 7231: Semantics and Content</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP" target="_blank" rel="noreferrer">MDN Web Docs — HTTP</a></li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <div>Made for a very basic overview of HTTP/1.1 servers.</div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,22 @@
+server:
+    port: 8080
+  # -port: 1111
+    server_name:  "R0-WebServer"
+#ffqffw
+    max_body_size:
+      value : 1048576 # 1MB
+
+    routing:
+        "/":
+          root: "./static"
+          index: "index.html"
+
+server2:
+    \- test : ffff
+    334fff ff f ff- fqwfqf: fff
+
+# list:
+#   - ffff
+#   - fwqfqfqfq
+#   -fffff
+
